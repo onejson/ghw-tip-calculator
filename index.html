@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Tip Calculator · GHW Hacktoberfest</title>
+  <style>
+    :root {
+      --bg: #0f1419;
+      --card: #1a2332;
+      --text: #e7ecf3;
+      --muted: #8b9bb4;
+      --accent: #5b8def;
+      --accent-2: #3dd68c;
+      --border: #2a3548;
+    }
+    * { box-sizing: border-box; }
+    body {
+      margin: 0;
+      min-height: 100vh;
+      font-family: "Segoe UI", system-ui, sans-serif;
+      background: radial-gradient(1200px 600px at 20% -10%, #1e3a5f 0%, var(--bg) 55%);
+      color: var(--text);
+      display: grid;
+      place-items: center;
+      padding: 24px;
+    }
+    .card {
+      width: min(420px, 100%);
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 28px;
+      box-shadow: 0 20px 50px rgba(0,0,0,.35);
+    }
+    h1 { margin: 0 0 6px; font-size: 1.45rem; }
+    p.sub { margin: 0 0 22px; color: var(--muted); font-size: .92rem; }
+    label { display: block; font-size: .85rem; color: var(--muted); margin-bottom: 6px; }
+    input[type="number"] {
+      width: 100%;
+      padding: 12px 14px;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #121a26;
+      color: var(--text);
+      font-size: 1rem;
+      margin-bottom: 16px;
+    }
+    input:focus { outline: 2px solid var(--accent); border-color: transparent; }
+    .tips { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; margin-bottom: 16px; }
+    .tips button {
+      padding: 10px 0;
+      border-radius: 10px;
+      border: 1px solid var(--border);
+      background: #121a26;
+      color: var(--text);
+      cursor: pointer;
+      font-weight: 600;
+    }
+    .tips button.active, .tips button:hover {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+    .row { display: flex; justify-content: space-between; align-items: baseline; margin-top: 10px; }
+    .row span:first-child { color: var(--muted); }
+    .row strong { font-size: 1.25rem; }
+    .total strong { color: var(--accent-2); font-size: 1.5rem; }
+    .footer { margin-top: 20px; font-size: .75rem; color: var(--muted); }
+  </style>
+</head>
+<body>
+  <main class="card">
+    <h1>Tip Calculator</h1>
+    <p class="sub">MLH GHW: Hacktoberfest · Challenge 1 mini app</p>
+
+    <label for="bill">Bill amount ($)</label>
+    <input id="bill" type="number" min="0" step="0.01" value="42.50" />
+
+    <label>Tip percent</label>
+    <div class="tips" id="tipButtons">
+      <button type="button" data-tip="10">10%</button>
+      <button type="button" data-tip="15" class="active">15%</button>
+      <button type="button" data-tip="18">18%</button>
+      <button type="button" data-tip="20">20%</button>
+    </div>
+
+    <label for="customTip">Or custom tip %</label>
+    <input id="customTip" type="number" min="0" step="1" placeholder="e.g. 12" />
+
+    <label for="people">Split between</label>
+    <input id="people" type="number" min="1" step="1" value="2" />
+
+    <div class="row"><span>Tip</span><strong id="tipAmount">$0.00</strong></div>
+    <div class="row total"><span>Total</span><strong id="totalAmount">$0.00</strong></div>
+    <div class="row"><span>Per person</span><strong id="perPerson">$0.00</strong></div>
+
+    <p class="footer">Built for Cursor Challenge 1 · open this file in a browser to run</p>
+  </main>
+  <script>
+    const billEl = document.getElementById("bill");
+    const customTipEl = document.getElementById("customTip");
+    const peopleEl = document.getElementById("people");
+    const tipButtons = document.querySelectorAll("#tipButtons button");
+    let tipPercent = 15;
+
+    tipButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        tipButtons.forEach((b) => b.classList.remove("active"));
+        btn.classList.add("active");
+        tipPercent = Number(btn.dataset.tip);
+        customTipEl.value = "";
+        recalc();
+      });
+    });
+
+    customTipEl.addEventListener("input", () => {
+      const v = Number(customTipEl.value);
+      if (!Number.isNaN(v) && customTipEl.value !== "") {
+        tipPercent = v;
+        tipButtons.forEach((b) => b.classList.remove("active"));
+      }
+      recalc();
+    });
+
+    [billEl, peopleEl].forEach((el) => el.addEventListener("input", recalc));
+
+    function money(n) {
+      return "$" + (Number.isFinite(n) ? n : 0).toFixed(2);
+    }
+
+    function recalc() {
+      const bill = Math.max(0, Number(billEl.value) || 0);
+      const people = Math.max(1, Math.floor(Number(peopleEl.value) || 1));
+      const tip = bill * (tipPercent / 100);
+      const total = bill + tip;
+      document.getElementById("tipAmount").textContent = money(tip);
+      document.getElementById("totalAmount").textContent = money(total);
+      document.getElementById("perPerson").textContent = money(total / people);
+    }
+
+    recalc();
+  </script>
+</body>
+</html>
